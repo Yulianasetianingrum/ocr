@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Detector Teks & Simbol Otomatis</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="brand">
+        <div class="brand-icon">🤖</div>
+        <div>
+          <h1 class="brand-title">Detector Otomatis Layar</h1>
+          <p class="brand-sub">Membaca Teks, Angka & Simbol Layar Otomatis</p>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Start / Stop Control Toggle Button -->
+    <div class="control-card">
+      <button id="btn-toggle-auto" class="btn-toggle btn-state-active">
+        <span class="btn-icon" id="toggle-icon">⏹️</span>
+        <span class="btn-text" id="toggle-text">Hentikan Deteksi & Klik Otomatis</span>
+      </button>
+    </div>
+
+    <!-- Auto Status Banner -->
+    <div class="auto-status-card" id="status-card">
+      <div class="status-indicator">
+        <div class="pulse-dot" id="status-pulse"></div>
+        <span id="status-text">Deteksi & Klik Otomatis: AKTIF</span>
+      </div>
+    </div>
+
+    <!-- MAIN VALUE DISPLAY (Moved from Remote) -->
+    <div class="main-value-card" style="margin-top: 0.75rem; margin-bottom: 0.75rem;">
+      <div style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 1px; text-align: center;">Nilai Utama Terdeteksi</div>
+      
+      <div id="descPrimaryVal" class="primary-value-display" style="text-align: center; font-size: 3.5rem; font-weight: 800; font-variant-numeric: tabular-nums; color: var(--accent-cyan); text-shadow: 0 0 20px rgba(0, 229, 255, 0.4); margin: 0.5rem 0;">--</div>
+      
+      <div style="display: flex; justify-content: center; gap: 0.75rem; font-size: 0.75rem; margin-top: 0.75rem;">
+        <span id="remoteTrendBadge" class="trend-badge" style="padding: 0.4rem 0.8rem; border-radius: 4px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; background: rgba(148, 163, 184, 0.15); color: #94a3b8; transition: all 0.3s ease;">▶ STABIL</span>
+      </div>
+    </div>
+
+    <!-- TARGET MAPPING CONTROLS -->
+    <div style="display: flex; gap: 0.5rem; margin-bottom: 0.75rem;">
+      <button id="btnMapTarget" style="flex: 2; background: rgba(0, 229, 255, 0.15); color: var(--accent-cyan); border: 1px solid rgba(0, 229, 255, 0.4); padding: 0.6rem 0.8rem; border-radius: 8px; font-size: 0.8rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.4rem; transition: all 0.2s;">
+        🎯 Petakan Area Target (Seleksi)
+      </button>
+      <button id="btnResetRoi" style="flex: 1; background: rgba(239, 68, 68, 0.12); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); padding: 0.6rem 0.8rem; border-radius: 8px; font-size: 0.75rem; font-weight: 700; cursor: pointer; transition: all 0.2s;">
+        🔄 Reset (Layar)
+      </button>
+    </div>
+    <div id="mappedAreaStatus" style="font-size: 0.7rem; color: var(--text-muted); text-align: center; margin-bottom: 0.75rem;">
+      Status Area: <span style="color: var(--accent-cyan); font-weight: 700;">Layar Penuh (Otomatis)</span>
+    </div>
+
+    <!-- Live Signal & Trend Banner (Sync 1:1 dengan Floating Badge) -->
+    <div style="display: flex; gap: 6px; margin: 4px 16px;">
+      <div class="signal-banner signal-neutral" id="popup-signal-box" style="flex: 1; margin: 0; padding: 6px 8px; flex-direction: column; align-items: flex-start; justify-content: center; gap: 2px;">
+        <span style="font-size: 9px; font-weight: normal;">Trend & Batang:</span>
+        <span id="popup-signal-text" style="font-size: 11px;">⚪ Netral</span>
+      </div>
+      <div class="signal-banner signal-green" id="popup-duration-box" style="flex: 1; margin: 0; padding: 6px 8px; flex-direction: column; align-items: flex-start; justify-content: center; gap: 2px;">
+        <span style="font-size: 9px; font-weight: normal;">Limit Durasi:</span>
+        <span id="popup-duration-text" style="font-size: 11px;">🟢 SIAP</span>
+      </div>
+    </div>
+
+    <!-- Target Direction Setting Card -->
+    <div class="target-direction-card">
+      <div class="card-title">🎯 Setting Target Arah Deteksi & Eksekusi</div>
+      <div class="target-direction-group">
+        <button class="btn-target-dir active" data-dir="auto" id="popup-target-auto" title="Otomatis mengikuti sinyal batang (Hijau->Naik, Merah->Turun)">⚡ Otomatis</button>
+        <button class="btn-target-dir" data-dir="naik" id="popup-target-naik" title="Fokus Target NAIK (Tombol Atas)">🟢 Target NAIK (Atas)</button>
+        <button class="btn-target-dir" data-dir="turun" id="popup-target-turun" title="Fokus Target TURUN (Tombol Bawah)">🔴 Target TURUN (Bawah)</button>
+      </div>
+    </div>
+
+    <!-- Automation & Action Card -->
+    <div class="automation-card">
+      <div class="card-title">🤖 Kontrol Nominal & Modal Awal</div>
+      <div style="font-size: 11px; font-weight: 700; color: #38bdf8; margin-bottom: 4px;">💰 MODAL AWAL (PATOKAN RESET WIN):</div>
+      <div class="nominal-input-group" style="margin-bottom: 8px;">
+        <input type="number" id="popup-base-nominal" class="nominal-input" placeholder="Modal Awal (mis: 10000)..." value="10000" style="border-color: #38bdf8; background: rgba(56, 189, 248, 0.08);">
+      </div>
+
+      <div style="font-size: 11px; font-weight: 700; color: #94a3b8; margin-bottom: 4px;">📊 NOMINAL AKTIF (STEP MARTINGALE):</div>
+      <div class="nominal-input-group">
+        <input type="number" id="popup-nominal-input" class="nominal-input" placeholder="Jumlah Nominal..." value="10000">
+        <button id="btn-send-nominal" class="btn-send-nominal" title="Isi Nominal ke Layar">✏️ Isi Nominal</button>
+      </div>
+      <div class="action-btn-group">
+        <button id="btn-click-naik" class="btn-action-large btn-naik-large">🟢 Klik Naik</button>
+        <button id="btn-click-turun" class="btn-action-large btn-turun-large">🔴 Klik Turun</button>
+      </div>
+      <div id="automation-feedback" class="automation-feedback"></div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <nav class="tab-nav">
+      <button class="tab-btn active" data-tab="tab-detector">Hasil Teks Layar</button>
+      <button class="tab-btn" data-tab="tab-history">Riwayat Pemindaian</button>
+    </nav>
+
+    <!-- Tab 1: Live Screen Reading -->
+    <!-- Tab 1: Live Screen Reading (Removed per user request) -->
+    <main id="tab-detector" class="tab-content active">
+      <div class="empty-state" style="text-align: center; color: var(--text-muted); padding: 2rem;">
+        Fitur Deteksi Teks Kasar (Raw Text) telah dinonaktifkan untuk fokus pada pemetaan target (Sub-ROI).
+      </div>
+    </main>
+
+    <!-- Tab 2: Scan History -->
+    <main id="tab-history" class="tab-content">
+      <div class="history-header">
+        <span class="form-label">Riwayat (Otomatis Reset Setiap 2 Menit)</span>
+        <button id="btn-clear-history" class="btn-small">Hapus Sekarang</button>
+      </div>
+      <div id="history-list" class="history-list">
+        <div class="empty-state">Riwayat kosong. Klik "Mulai Deteksi" untuk membaca layar.</div>
+      </div>
+    </main>
+
+    <!-- Session Position Log Card (Bottom Section) -->
+    <div class="session-log-card" style="margin: 10px 12px 12px 12px; background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(56, 189, 248, 0.2); border-radius: 10px; padding: 10px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+        <span style="font-weight: 700; font-size: 12px; color: #f8fafc;">📋 Log Position Sesi (Open ➔ Close)</span>
+        <button id="btn-clear-session-logs" class="btn-small" style="background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.4); cursor: pointer; padding: 2px 8px; font-size: 11px;">🗑️ Hapus Semua Log</button>
+      </div>
+      <div id="session-log-list" style="max-height: 120px; overflow-y: auto; font-size: 11px; font-family: monospace;">
+        <div class="empty-state" style="text-align: center; color: #64748b; padding: 10px;">Belum ada log posisi. Klik "Mulai Deteksi" untuk mencatat sesi.</div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <span>Auto Screen Text Reader (Kontrol Mulai & Hentikan)</span>
+    </footer>
+  </div>
+
+  <script src="lib/change-detector.js"></script>
+  <script src="lib/capture.js"></script>
+  <script src="lib/logger.js"></script>
+  <script src="lib/ocr-engine.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>

@@ -1,0 +1,311 @@
+/* CSS Styling for Injected Interactive Visual Target Area Mapper (Snipping Tool) Overlay */
+
+/* Force hide any old in-page popup elements if present in DOM */
+#rss-remote-popup,
+#rss-remote-badge {
+  display: none !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  visibility: hidden !important;
+}
+
+/* INTERACTIVE VISUAL TARGET AREA MAPPER OVERLAY */
+#rss-target-mapper-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(2px);
+  z-index: 2147483647; /* Topmost z-index */
+  cursor: crosshair;
+  user-select: text;
+}
+
+.rss-mapper-instruction {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(11, 15, 25, 0.95);
+  border: 1px solid #00e5ff;
+  color: #f8fafc;
+  padding: 0.6rem 1.2rem;
+  border-radius: 30px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  box-shadow: 0 0 25px rgba(0, 229, 255, 0.4);
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+#rss-mapper-selection-rect {
+  position: absolute;
+  border: 2px dashed #00e5ff;
+  background: rgba(0, 229, 255, 0.15);
+  box-shadow: 0 0 20px rgba(0, 229, 255, 0.5);
+  pointer-events: none;
+}
+
+.rss-mapper-rect-badge {
+  position: absolute;
+  bottom: -28px;
+  right: 0;
+  background: #00e5ff;
+  color: #0b0f19;
+  font-family: monospace;
+  font-size: 0.75rem;
+  font-weight: 900;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+/* --- BEAUTIFUL GLASSMORPHISM FLOATING POPUP (OCR AUTO BADGE) --- */
+#ocr-auto-badge {
+  position: fixed;
+  z-index: 2147483647;
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  border-radius: 8px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 15px rgba(0, 229, 255, 0.2);
+  width: auto;
+  min-width: 600px;
+  max-width: 95vw;
+  color: #f8fafc;
+  font-family: 'Inter', system-ui, sans-serif;
+  overflow: hidden;
+  transition: height 0.3s ease, border-color 0.3s ease, transform 0.3s ease;
+  user-select: none;
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  padding: 0;
+}
+
+#ocr-auto-badge.ocr-badge-collapsed {
+  height: 44px !important;
+  width: 300px !important;
+  min-width: unset;
+  overflow: hidden;
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.ocr-badge-col {
+  padding: 8px 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.ocr-badge-col:last-child {
+  border-right: none;
+}
+
+.ocr-badge-header {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: rgba(0, 0, 0, 0.4);
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
+  cursor: grab;
+}
+
+.ocr-badge-header:active {
+  cursor: grabbing;
+}
+
+.ocr-badge-title-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ocr-badge-drag-icon {
+  color: #64748b;
+  font-size: 14px;
+  line-height: 1;
+}
+
+.ocr-badge-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  font-weight: 600;
+  color: #4ade80;
+}
+
+.ocr-pulse-dot {
+  width: 6px;
+  height: 6px;
+  background: #4ade80;
+  border-radius: 50%;
+  box-shadow: 0 0 8px #4ade80;
+  animation: pulse-dot-badge 1.5s infinite;
+}
+
+@keyframes pulse-dot-badge {
+  0% { transform: scale(0.9); opacity: 1; }
+  50% { transform: scale(1.5); opacity: 0.5; }
+  100% { transform: scale(0.9); opacity: 1; }
+}
+
+.ocr-badge-close-btn {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.ocr-badge-close-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.ocr-btn-tiny {
+  background: rgba(239, 68, 68, 0.2);
+  color: #fca5a5;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.ocr-btn-tiny:hover {
+  background: rgba(239, 68, 68, 0.4);
+}
+
+.ocr-badge-signal-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  font-size: 11px;
+  font-weight: 600;
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.05);
+  transition: all 0.3s;
+}
+
+.ocr-badge-signal-row.signal-neutral {
+  color: #94a3b8;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.ocr-badge-signal-row.signal-green {
+  color: #4ade80;
+  background: rgba(74, 222, 128, 0.05);
+}
+
+.ocr-badge-signal-row.signal-red {
+  color: #f87171;
+  background: rgba(248, 113, 113, 0.05);
+}
+
+.ocr-badge-target-row {
+  padding: 8px 12px;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.ocr-target-label {
+  display: block;
+  font-size: 10px;
+  font-weight: 700;
+  color: #94a3b8;
+  margin-bottom: 6px;
+}
+
+.ocr-target-btn-group {
+  display: flex;
+  gap: 4px;
+}
+
+.ocr-dir-btn {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #94a3b8;
+  padding: 5px 0;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.ocr-dir-btn.active {
+  background: rgba(56, 189, 248, 0.2);
+  border-color: #38bdf8;
+  color: #38bdf8;
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.2);
+}
+
+.ocr-badge-automation-box {
+  padding: 10px 12px;
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.ocr-auto-input-row, .ocr-auto-btn-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.ocr-badge-input {
+  flex: 1;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #fff;
+  padding: 6px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  outline: none;
+  min-width: 0;
+}
+
+.ocr-badge-input:focus {
+  border-color: #38bdf8;
+  box-shadow: 0 0 8px rgba(56, 189, 248, 0.3);
+}
+
+.ocr-badge-preview {
+  padding: 10px 12px;
+  background: rgba(0, 229, 255, 0.05);
+  border-top: 1px solid rgba(0, 229, 255, 0.2);
+  text-align: center;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-size: 20px;
+  font-weight: 800;
+  color: #00e5ff;
+  letter-spacing: 1px;
+  text-shadow: 0 0 12px rgba(0, 229, 255, 0.4);
+}
+
+.ocr-badge-summary {
+  display: flex;
+  gap: 8px;
+  font-size: 9px;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.ocr-badge-timer {
+  font-size: 9px;
+  color: #8b5cf6;
+  font-weight: 700;
+}

@@ -1,0 +1,6 @@
+{
+  "name": "realtime-screen-scanner",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Chrome Extension for Real-Time Screen Scanning and OCR"
+}

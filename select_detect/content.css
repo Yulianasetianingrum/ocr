@@ -1,0 +1,65 @@
+/* CSS Styling for Injected Interactive Visual Target Area Mapper (Snipping Tool) Overlay */
+
+/* Force hide any old in-page popup elements if present in DOM */
+#rss-remote-popup,
+#rss-remote-badge {
+  display: none !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  visibility: hidden !important;
+}
+
+/* INTERACTIVE VISUAL TARGET AREA MAPPER OVERLAY */
+#rss-target-mapper-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(2px);
+  z-index: 2147483647; /* Topmost z-index */
+  cursor: crosshair;
+  user-select: none;
+}
+
+.rss-mapper-instruction {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(11, 15, 25, 0.95);
+  border: 1px solid #00e5ff;
+  color: #f8fafc;
+  padding: 0.6rem 1.2rem;
+  border-radius: 30px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  box-shadow: 0 0 25px rgba(0, 229, 255, 0.4);
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+#rss-mapper-selection-rect {
+  position: absolute;
+  border: 2px dashed #00e5ff;
+  background: rgba(0, 229, 255, 0.15);
+  box-shadow: 0 0 20px rgba(0, 229, 255, 0.5);
+  pointer-events: none;
+}
+
+.rss-mapper-rect-badge {
+  position: absolute;
+  bottom: -28px;
+  right: 0;
+  background: #00e5ff;
+  color: #0b0f19;
+  font-family: monospace;
+  font-size: 0.75rem;
+  font-weight: 900;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  white-space: nowrap;
+}

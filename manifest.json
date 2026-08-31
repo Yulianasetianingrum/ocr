@@ -1,0 +1,44 @@
+{
+  "manifest_version": 3,
+  "name": "Detector Otomatis Layar",
+  "version": "1.2.0",
+  "description": "Membaca teks, angka, dan simbol (+, -, (), =%) di layar secara otomatis.",
+  "permissions": [
+    "activeTab",
+    "tabs",
+    "scripting",
+    "storage",
+    "alarms"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "action": {
+    "default_title": "Detector Otomatis Layar"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": [
+        "lib/tesseract.min.js",
+        "lib/change-detector.js",
+        "lib/capture.js",
+        "lib/logger.js",
+        "lib/ocr-engine.js",
+        "lib/log-manager.js",
+        "lib/state-manager.js",
+        "content.js"
+      ],
+      "css": ["content.css"]
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["lib/*"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}

@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Real-Time Screen Scanner & OCR Engine</title>
+  <link rel="stylesheet" href="dashboard.css">
+</head>
+<body>
+  <div class="dashboard-container">
+    <!-- Header Bar -->
+    <header>
+      <div class="brand">
+        <div class="brand-icon">⚡</div>
+        <div class="brand-title">
+          <h1>Real-Time Screen Scanner</h1>
+          <p>Continuous Capture • Low-Latency Change Detection • Sub-ROI OCR</p>
+        </div>
+      </div>
+
+      <div class="header-status">
+        <div id="systemStatusBadge" class="status-badge paused">
+          STATUS: READY
+        </div>
+
+        <div class="header-actions">
+          <button id="btnOpenRemoteWindow" class="btn btn-secondary">
+            <span>⚡ Pop Up Remote</span>
+          </button>
+          <button id="btnStartCapture" class="btn btn-primary">
+            <span>▶ Start Capture</span>
+          </button>
+          <button id="btnStopCapture" class="btn btn-danger" style="display: none;">
+            <span>⏹ Stop Capture</span>
+          </button>
+          <button id="btnExportCSV" class="btn btn-secondary">
+            <span>📥 Export CSV</span>
+          </button>
+          <button id="btnExportJSON" class="btn btn-secondary">
+            <span>📥 Export JSON</span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Dashboard Grid -->
+    <div class="dashboard-grid">
+      <!-- Left Column: Preview, Metrics, Log -->
+      <div class="left-col" style="display: flex; flex-direction: column; gap: 1.5rem;">
+        
+        <!-- Live Preview Box -->
+        <div class="card">
+          <div class="card-title">
+            <span>Live Monitor & Interactive ROI Selector</span>
+            <span id="roiModeBadge" class="badge">Mode: Full Screen</span>
+          </div>
+
+          <div class="preview-container">
+            <canvas id="previewCanvas" width="960" height="540"></canvas>
+            <div id="previewOverlayInfo" class="preview-overlay-info">
+              Click & Drag mouse to draw ROI box • Hold Shift for Multi-ROI
+            </div>
+          </div>
+
+          <!-- ROI Controls -->
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div style="display: flex; gap: 0.5rem;">
+              <button id="btnRoiFullScreen" class="btn btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.75rem;">
+                Full Screen
+              </button>
+              <button id="btnRoiCustom" class="btn btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.75rem;">
+                Custom ROI
+              </button>
+              <button id="btnRoiMulti" class="btn btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.75rem;">
+                Multi-ROI
+              </button>
+            </div>
+            <button id="btnClearRoi" class="btn btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.75rem;">
+              Reset ROI
+            </button>
+          </div>
+        </div>
+
+        <!-- Real-Time Telemetry & Performance Metrics Cards -->
+        <div class="card">
+          <div class="card-title">
+            <span>Performance Telemetry & Latency Engine</span>
+            <span class="badge">Microsecond Precision</span>
+          </div>
+
+          <div class="metrics-grid">
+            <div class="metric-card">
+              <div class="metric-label">Capture FPS</div>
+              <div id="metricCaptureFps" class="metric-value">0.0</div>
+              <div id="metricFpsTarget" class="metric-sub">Target: 60 FPS</div>
+            </div>
+
+            <div class="metric-card">
+              <div class="metric-label">End-to-End Latency</div>
+              <div id="metricTotalLatency" class="metric-value">0.0 ms</div>
+              <div id="metricLatencyStats" class="metric-sub">Min: 0 | P95: 0 ms</div>
+            </div>
+
+            <div class="metric-card">
+              <div class="metric-label">Change Detect</div>
+              <div id="metricChangeDetectMs" class="metric-value">0.0 ms</div>
+              <div class="metric-sub">Grayscale Diff</div>
+            </div>
+
+            <div class="metric-card">
+              <div class="metric-label">OCR Latency</div>
+              <div id="metricOcrLatency" class="metric-value">0.0 ms</div>
+              <div class="metric-sub">Web Worker</div>
+            </div>
+
+            <div class="metric-card">
+              <div class="metric-label">Dropped Frames</div>
+              <div id="metricDroppedFrames" class="metric-value">0</div>
+              <div class="metric-sub">Stale Backlog Avoided</div>
+            </div>
+
+            <div class="metric-card">
+              <div class="metric-label">Changes / Sec</div>
+              <div id="metricChangesPerSec" class="metric-value">0</div>
+              <div class="metric-sub">Text State Diffs</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Real-Time Change Log Feed -->
+        <div class="card">
+          <div class="card-title">
+            <span>Real-Time Change Log</span>
+            <button id="btnClearLogs" class="btn btn-secondary" style="padding: 0.2rem 0.5rem; font-size: 0.7rem;">Clear Log</button>
+          </div>
+
+          <div class="log-table-container">
+            <table class="log-table">
+              <thead>
+                <tr>
+                  <th>Timestamp</th>
+                  <th>Status</th>
+                  <th>Detected Text</th>
+                  <th>Latency</th>
+                  <th>Conf</th>
+                </tr>
+              </thead>
+              <tbody id="logTableBody">
+                <tr>
+                  <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 1rem;">
+                    No screen change events logged yet. Start capture or run test suite.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Right Column: Current Result, Settings, Acceptance Tests -->
+      <div class="right-col" style="display: flex; flex-direction: column; gap: 1.5rem;">
+        
+        <!-- Current OCR Result -->
+        <div class="card">
+          <div class="card-title">
+            <span>Current OCR Result</span>
+            <span id="textChangeBadge" class="badge">NO CHANGE</span>
+          </div>
+
+          <div class="result-card">
+            <div class="result-header">
+              <span class="metric-label">LATEST TEXT OUTPUT</span>
+              <span id="resultTimestamp" class="timestamp-tag">[00:00:00.000000]</span>
+            </div>
+
+            <div id="resultTextDisplay" class="result-text-display">
+              -- WAITING FOR CAPTURE --
+            </div>
+
+            <div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-muted);">
+              <div>Previous: <span id="resultPrevText" style="color: var(--text-main); font-family: var(--font-mono);">--</span></div>
+              <div>Confidence: <span id="resultConfidence" style="color: var(--accent-cyan); font-weight: 700;">100%</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Configuration Panel -->
+        <div class="card">
+          <div class="card-title">
+            <span>Scanner Settings & Thresholds</span>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 1rem;">
+            
+            <div class="control-group">
+              <label for="selectTargetFps">
+                <span>Target Capture FPS</span>
+                <span id="lblTargetFps">60 FPS</span>
+              </label>
+              <select id="selectTargetFps">
+                <option value="30">30 FPS</option>
+                <option value="60" selected>60 FPS</option>
+                <option value="120">120 FPS</option>
+                <option value="240">240 FPS</option>
+              </select>
+            </div>
+
+            <div class="control-group">
+              <label for="rangeDiffThreshold">
+                <span>Change Sensitivity (%)</span>
+                <span id="lblDiffSens">0.5%</span>
+              </label>
+              <input type="range" id="rangeDiffThreshold" min="0.1" max="5.0" step="0.1" value="0.5">
+            </div>
+
+            <div class="control-group">
+              <label for="rangePixelThreshold">
+                <span>Pixel Diff Threshold</span>
+                <span id="lblPixelSens">25</span>
+              </label>
+              <input type="range" id="rangePixelThreshold" min="5" max="100" step="1" value="25">
+            </div>
+
+            <div class="control-group">
+              <label for="rangeConfidenceThreshold">
+                <span>Confidence Threshold</span>
+                <span id="lblConfThresh">50%</span>
+              </label>
+              <input type="range" id="rangeConfidenceThreshold" min="10" max="95" step="5" value="50">
+            </div>
+
+            <div class="control-group">
+              <label for="selectCharWhitelist">
+                <span>Character Filter Mode</span>
+              </label>
+              <select id="selectCharWhitelist">
+                <option value="0123456789:.,-+%HPMP" selected>Digits & HUD Stats (0-9, HP, MP, :, .)</option>
+                <option value="">All Text Characters</option>
+              </select>
+            </div>
+
+            <div class="control-group" style="display: flex; flex-direction: row; align-items: center; justify-content: space-between;">
+              <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600;">Image Preprocessing</span>
+              <input type="checkbox" id="chkPreprocessing" checked style="accent-color: var(--accent-cyan); width: 18px; height: 18px;">
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Built-in Acceptance Test Suite Panel -->
+        <div class="card">
+          <div class="card-title">
+            <span>Acceptance Test Suite</span>
+            <span class="badge">Real Hardware Test</span>
+          </div>
+
+          <p style="font-size: 0.8rem; color: var(--text-muted);">
+            Run automated synthetic test scenarios to measure real hardware performance:
+          </p>
+
+          <div class="test-suite-grid">
+            <button id="btnTest1" class="test-btn">Test 1 — Static Text</button>
+            <button id="btnTest2" class="test-btn">Test 2 — Fast Counter</button>
+            <button id="btnTest3" class="test-btn">Test 3 — Backlog Drop</button>
+            <button id="btnTest4" class="test-btn">Test 4 — Partial Change</button>
+            <button id="btnTest5" class="test-btn">Test 5 — OCR Failure</button>
+          </div>
+
+          <div id="testStatusMessage" style="font-size: 0.8rem; font-family: var(--font-mono); color: var(--accent-purple); min-height: 1.2rem;">
+            Ready to execute test.
+          </div>
+
+          <!-- Benchmark Report Card -->
+          <div class="benchmark-card">
+            <div style="font-weight: 700; color: var(--accent-cyan); font-size: 0.85rem; margin-bottom: 0.3rem;">
+              REAL HARDWARE BENCHMARK REPORT
+            </div>
+            <div class="benchmark-row">
+              <span>Capture FPS:</span>
+              <strong id="bmCaptureFps">--</strong>
+            </div>
+            <div class="benchmark-row">
+              <span>Actual OCR FPS:</span>
+              <strong id="bmOcrFps">--</strong>
+            </div>
+            <div class="benchmark-row">
+              <span>Average OCR Latency:</span>
+              <strong id="bmAvgOcrMs">--</strong>
+            </div>
+            <div class="benchmark-row">
+              <span>Average End-to-End Latency:</span>
+              <strong id="bmAvgEndToEndMs">--</strong>
+            </div>
+            <div class="benchmark-row">
+              <span>P95 Latency:</span>
+              <strong id="bmP95Ms">--</strong>
+            </div>
+            <div class="benchmark-row">
+              <span>Estimated CPU / GPU Impact:</span>
+              <strong id="bmCpuGpu" style="color: var(--accent-green);">Low (&lt; 5%)</strong>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  <script src="lib/tesseract.min.js"></script>
+  <script src="lib/capture.js"></script>
+  <script src="lib/change-detector.js"></script>
+  <script src="lib/ocr-engine.js"></script>
+  <script src="lib/logger.js"></script>
+  <script src="lib/test-suite.js"></script>
+  <script type="module" src="dashboard.js"></script>
+</body>
+</html>

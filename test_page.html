@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Halaman Uji Coba Deteksi Teks, Angka & Simbol</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background-color: #0f172a;
+      color: #f8fafc;
+      padding: 40px;
+      line-height: 1.6;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: #1e293b;
+      padding: 30px;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.1);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+    h1 {
+      color: #38bdf8;
+      margin-bottom: 10px;
+    }
+    .subtitle {
+      color: #94a3b8;
+      margin-bottom: 30px;
+    }
+    .test-card {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    .test-card h3 {
+      color: #4ade80;
+      margin-bottom: 12px;
+    }
+    .math-box {
+      font-family: monospace;
+      font-size: 20px;
+      background: #0f172a;
+      padding: 15px;
+      border-radius: 8px;
+      border-left: 4px solid #38bdf8;
+      margin: 10px 0;
+      color: #f8fafc;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+    th, td {
+      border: 1px solid rgba(255,255,255,0.1);
+      padding: 10px;
+      text-align: left;
+    }
+    th {
+      background: #334155;
+    }
+
+    /* Styling untuk Simulator Transaksi Otomasi Mesin */
+    .sim-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      margin-top: 10px;
+    }
+    .sim-row {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+    .sim-input {
+      flex: 1;
+      padding: 12px 14px;
+      border-radius: 8px;
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      background: #0f172a;
+      color: #f8fafc;
+      font-size: 14px;
+      font-weight: 600;
+      outline: none;
+    }
+    .sim-input:focus {
+      border-color: #38bdf8;
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.4);
+    }
+    .sim-btn-group {
+      display: flex;
+      gap: 12px;
+    }
+    .sim-btn {
+      flex: 1;
+      padding: 14px;
+      border-radius: 10px;
+      border: none;
+      font-weight: 700;
+      font-size: 14px;
+      color: #ffffff;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      transition: all 0.2s ease;
+    }
+    .sim-naik {
+      background: linear-gradient(135deg, #16a34a, #15803d);
+    }
+    .sim-naik:hover {
+      background: linear-gradient(135deg, #22c55e, #16a34a);
+      transform: translateY(-2px);
+    }
+    .sim-turun {
+      background: linear-gradient(135deg, #dc2626, #b91c1c);
+    }
+    .sim-turun:hover {
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      transform: translateY(-2px);
+    }
+    .action-log-box {
+      background: #090d16;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-family: monospace;
+      font-size: 12px;
+      color: #38bdf8;
+      min-height: 70px;
+      max-height: 150px;
+      overflow-y: auto;
+    }
+    .log-item {
+      margin-bottom: 4px;
+    }
+    .log-time {
+      color: #94a3b8;
+    }
+    .log-success {
+      color: #4ade80;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🧪 Halaman Pengujian OCR Extension</h1>
+    <p class="subtitle">Buka ekstensi ini lalu klik <strong>"Seleksi & Deteksi Layar"</strong> untuk menguji deteksi teks, angka, serta simbol +, -, (), *, =</p>
+
+    <!-- Test Case 1 -->
+    <div class="test-card">
+      <h3>1. Simbol Matematika & Formula Kurung</h3>
+      <p>Coba seleksi area kotak di bawah ini:</p>
+      <div class="math-box">
+        (150 + 450) - (200 * 2) = 200
+      </div>
+      <div class="math-box">
+        Total Biaya = (10 * 5.5) + (25 - 5)
+      </div>
+    </div>
+
+    <!-- Test Case 2 -->
+    <div class="test-card">
+      <h3>2. Tabel Keuangan & Statistik Angka</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Item</th>
+            <th>Jumlah / Formula</th>
+            <th>Total (IDR)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Pembelian Peralatan</td>
+            <td>(5 * 120.000) - 50.000</td>
+            <td>+ 550.000</td>
+          </tr>
+          <tr>
+            <td>Diskon Operasional</td>
+            <td>(100.000 - 15.000)</td>
+            <td>- 85.000</td>
+          </tr>
+          <tr>
+            <td>Net Profit Margin</td>
+            <td>((550.000 - 85.000) / 10)</td>
+            <td>+ 46.500</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Test Case 3 -->
+    <div class="test-card">
+      <h3>3. Teks Campuran Simbol Spesifik (+, -, (), =, %)</h3>
+      <p>Persamaan Aljabar Sederhana: <code>f(x) = (3x + 12) - (x - 4)</code></p>
+      <p>Target Hasil: Nilai x = 10, maka <code>f(10) = (30 + 12) - 6 = 36</code></p>
+    </div>
+
+    <!-- Test Case 4 -->
+    <div class="test-card">
+      <h3>4. Pengujian Otomasi Deteksi & Klik (Tombol 'Naik' / 'Turun' & Input Nominal)</h3>
+      <p>Buka deteksi otomatis ekstensi. Mesin akan membaca teks di layar ini, mendeteksi tulisan/tombol <strong>"NAIK"</strong> atau <strong>"TURUN"</strong>, lalu mengeklik tombol tersebut secara otomatis.</p>
+      
+      <div class="sim-panel">
+        <div class="sim-row" style="gap: 8px;">
+          <div style="flex:1;">
+            <label style="font-size:10px; font-weight:700; color:#94a3b8; display:block; margin-bottom:4px;">KOLOM INPUT NOMINAL (WEB):</label>
+            <input type="number" id="nominal-amount" class="sim-input" placeholder="Kolom nominal..." value="10000" style="width:100%;">
+          </div>
+          <div style="flex:1;">
+            <label style="font-size:10px; font-weight:700; color:#94a3b8; display:block; margin-bottom:4px;">KOLOM INPUT DURASI (WEB):</label>
+            <input type="text" id="duration-amount" class="sim-input" placeholder="Durasi (mis: 15s)..." value="00:15" style="width:100%;">
+          </div>
+        </div>
+
+        <div class="sim-btn-group">
+          <button id="btn-naik" class="sim-btn sim-naik">🟢 NAIK</button>
+          <button id="btn-turun" class="sim-btn sim-turun">🔴 TURUN</button>
+        </div>
+
+        <div>
+          <div style="font-size:11px; font-weight:700; color:#94a3b8; margin-bottom:6px;">📋 LOG AKTIVITAS MESIN (REALTIME):</div>
+          <div id="action-log-box" class="action-log-box">
+            <div class="log-item"><span class="log-time">[System]</span> Halaman pengujian siap. Aktifkan deteksi otomatis untuk menguji klik mesin...</div>
+          </div>
+        </div>
+      </div>
+    <!-- Test Case 5 -->
+    <div class="test-card">
+      <h3>5. Pengujian Deteksi Arah Batang Warna & Badge Deal Grafik</h3>
+      <p>Tekan tombol di bawah untuk menyimulasikan munculnya <strong>Loss Badge (-Đ5,00)</strong> atau <strong>Profit Badge (+Đ4,50)</strong> di grafik. Mesin akan mendeteksi badge tersebut dan memicu Strategi Martingale secara otomatis.</p>
+      
+      <div class="sim-panel">
+        <div style="display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap;">
+          <button id="btn-set-green" class="sim-btn sim-naik" style="padding: 8px 12px; font-size: 12px;">🟢 Set Batang Hijau</button>
+          <button id="btn-set-red" class="sim-btn sim-turun" style="padding: 8px 12px; font-size: 12px;">🔴 Set Batang Merah</button>
+          <button id="btn-sim-loss-badge" class="sim-btn sim-turun" style="padding: 8px 12px; font-size: 12px;">🔴 Simulasikan Badge Loss (-Đ5,00)</button>
+          <button id="btn-sim-profit-badge" class="sim-btn sim-naik" style="padding: 8px 12px; font-size: 12px;">🟢 Simulasikan Badge Win (+Đ4,50)</button>
+        </div>
+
+        <div id="bar-indicator" class="bar-green" style="height: 48px; border-radius: 8px; background-color: #22c55e; border: 2px solid rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-weight: 700; color: #ffffff; box-shadow: 0 4px 12px rgba(34, 197, 94, 0.4);">
+          🟢 ELEMEN BATANG AKTIF: WARNA HIJAU (SIGNAL NAIK)
+        </div>
+
+        <div id="sim-deal-badge-box" style="margin-top: 12px; display: none;">
+          <div id="sim-deal-badge" style="display: inline-block; padding: 6px 14px; border-radius: 20px; font-weight: 800; font-size: 14px; color: #ffffff; box-shadow: 0 4px 12px rgba(0,0,0,0.4);">
+            -Đ5,00
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Test Case 6 -->
+    <div class="test-card">
+      <h3>6. Pengujian Deteksi Trendline Garis Melintang & Trend Absurd</h3>
+      <p>Mesin menghitung kemiringan titik-titik melintang dari kiri ke kanan. Jika kemiringan miring ke atas (Uptrend) ➔ NAIK, miring ke bawah (Downtrend) ➔ TURUN, atau berfluktuasi ➔ Trend Absurd (Menahan Klik).</p>
+      
+      <div class="sim-panel">
+        <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+          <button id="btn-set-uptrend" class="sim-btn sim-naik" style="padding: 8px 12px; font-size: 12px;">📈 Simulasikan UPTREND</button>
+          <button id="btn-set-downtrend" class="sim-btn sim-turun" style="padding: 8px 12px; font-size: 12px;">📉 Simulasikan DOWNTREND</button>
+          <button id="btn-set-absurd" class="sim-btn" style="padding: 8px 12px; font-size: 12px; background: #eab308; color: #000;">⚠️ Simulasikan TREND ABSURD</button>
+        </div>
+
+        <!-- Simulated Candlestick Chart Area for Trendline Testing -->
+        <div id="chart-sim-area" style="height: 120px; background: #090d16; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); display: flex; align-items: flex-end; justify-content: space-around; padding: 12px 20px; position: relative;">
+          <div class="candle-green bar-item" style="width: 14px; height: 35px; background-color: #22c55e; border-radius: 2px;" title="Batang 1 (Hijau)"></div>
+          <div class="candle-green bar-item" style="width: 14px; height: 48px; background-color: #22c55e; border-radius: 2px;" title="Batang 2 (Hijau)"></div>
+          <div class="candle-red bar-item" style="width: 14px; height: 40px; background-color: #ef4444; border-radius: 2px;" title="Batang 3 (Merah)"></div>
+          <div class="candle-green bar-item" style="width: 14px; height: 65px; background-color: #22c55e; border-radius: 2px;" title="Batang 4 (Hijau)"></div>
+          <div class="candle-green bar-item" style="width: 14px; height: 80px; background-color: #22c55e; border-radius: 2px;" title="Batang 5 (Hijau)"></div>
+          <div class="candle-green bar-item" style="width: 14px; height: 95px; background-color: #22c55e; border-radius: 2px;" title="Batang 6 (Hijau)"></div>
+        </div>
+
+        <div id="trendline-display-box" style="padding: 12px; background: #0f172a; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); font-family: monospace; font-size: 13px; color: #38bdf8;">
+          📈 STATUS TRENDLINE: UPTREND (GARIS MELINTANG MIRING KE ATAS)
+        </div>
+      </div>
+    </div>
+
+    <!-- Test Case 7 -->
+    <div class="test-card">
+      <h3>7. Pengujian Responsif Screen Zoom & Setting Target Arah (Atas / Bawah)</h3>
+      <p>🔍 <strong>Uji Coba Zoom Screen:</strong> Coba tekan <code>Ctrl + Scroll Mouse</code> atau <code>Ctrl + Plus/Minus</code> untuk melakukan Zoom In (125%, 150%) dan Zoom Out (75%, 50%). Garis melintang akan tetap presisi menempel di atas elemen batang visual tanpa tergeser offset.</p>
+      <p>🎯 <strong>Uji Coba Setting Target Arah:</strong> Gunakan menu <strong>Target Arah</strong> di Pop-up Ekstensi atau Floating Badge untuk memilih <code>⚡ Otomatis</code>, <code>🟢 Target NAIK (Tombol Atas)</code>, atau <code>🔴 Target TURUN (Tombol Bawah)</code>.</p>
+    </div>
+
+    <!-- Test Case 8 -->
+    <div class="test-card">
+      <h3>8. Pengujian Batasan 1x Klik per Teks Durasi (Timer Durasi)</h3>
+      <p>⏱️ <strong>Limit 1x Klik per Durasi:</strong> Mesin membaca teks timer durasi di bawah. Saat mesin melakukan 1x klik, mesin akan mengunci (LOCK) dan tidak akan mengeklik lagi sampai durasi timer reset ke siklus berikutnya.</p>
+      
+      <div class="sim-panel">
+        <div style="display: flex; align-items: center; justify-content: space-between; background: #0f172a; padding: 12px 16px; border-radius: 8px; border: 1px solid rgba(56, 189, 248, 0.3);">
+          <div>
+            <div style="font-size: 11px; font-weight: 700; color: #94a3b8;">TIMER TEKS DURASI:</div>
+            <div id="sim-timer-box" class="timer" style="font-size: 24px; font-weight: 800; color: #38bdf8; font-family: monospace;">00:30</div>
+          </div>
+          <button id="btn-reset-sim-timer" class="sim-btn" style="padding: 8px 14px; font-size: 12px; background: #2563eb; width: auto; flex: none;">🔄 Reset Durasi Ke 00:30</button>
+        </div>
+      </div>
+    <!-- Test Case 9 -->
+    <div class="test-card">
+      <h3>9. Pengujian Komparasi Nilai Teks (Open Position vs Closing Position)</h3>
+      <p>Mesin membaca elemen <strong>Nilai Teks Quote (`636.5116`)</strong> saat tombol <strong>"NAIK"</strong> / <strong>"TURUN"</strong> diklik (Open Position) dan saat durasi berakhir (Closing Position).</p>
+      
+      <div class="sim-panel">
+        <div style="display: flex; align-items: center; gap: 12px; background: #0f172a; padding: 14px; border-radius: 8px; border: 1px solid rgba(56, 189, 248, 0.4);">
+          <span style="font-size: 12px; font-weight: 700; color: #94a3b8;">ELEMEN TEKS QUOTE HARGA LIVE:</span>
+          <span class="_3TQ7Xlj0Qq" id="sim-live-quote" style="font-size: 22px; font-weight: 800; color: #38bdf8; background: rgba(56,189,248,0.15); padding: 6px 14px; border-radius: 8px; border: 1px solid #38bdf8;">636.5116</span>
+        </div>
+
+        <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px;">
+          <button id="btn-set-price-base" class="sim-btn" style="padding: 8px 12px; font-size: 12px; background: #3b82f6;">📌 Set Harga OP (636.0253)</button>
+          <button id="btn-set-price-up" class="sim-btn sim-naik" style="padding: 8px 12px; font-size: 12px;">📈 Set Harga Naik (636.5116)</button>
+          <button id="btn-set-price-down" class="sim-btn sim-turun" style="padding: 8px 12px; font-size: 12px;">📉 Set Harga Turun (635.8900)</button>
+    <!-- Test Case 10 -->
+    <div class="test-card">
+      <h3>10. Pengujian Topological Decision Tree OCR & Deteksi Nominal Utama (`select_detect`)</h3>
+      <p>Menguji pembacaan Topological Decision Tree pada nominal angka desimal, persentase, dan pembuangan ikon dekoratif di sebelah kiri nominal.</p>
+      
+      <div class="sim-panel">
+        <div style="display: flex; gap: 12px; align-items: center; background: #0f172a; padding: 14px; border-radius: 8px; border: 1px solid rgba(56, 189, 248, 0.4);">
+          <span style="font-size: 12px; font-weight: 700; color: #94a3b8;">NOMINAL UTAMA TERDETEKSI (TOPOLOGICAL OCR):</span>
+          <span id="topo-nominal-display" style="font-size: 22px; font-weight: 900; color: #38bdf8; background: rgba(56,189,248,0.15); padding: 6px 16px; border-radius: 8px; border: 1px solid #38bdf8;">
+            🛡️ 18,000.50
+          </span>
+        </div>
+
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+          <button id="btn-topo-18000" class="sim-btn sim-naik" style="padding: 8px 12px; font-size: 12px;">🛡️ Set Nominal 18,000.50 (Naik)</button>
+          <button id="btn-topo-61461" class="sim-btn sim-turun" style="padding: 8px 12px; font-size: 12px;">🔒 Set Nominal 6.1461 (Turun)</button>
+          <button id="btn-topo-150" class="sim-btn" style="padding: 8px 12px; font-size: 12px; background: #8b5cf6; color: #fff;">📊 Set Nominal 150.00%</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      const nominalInput = document.getElementById('nominal-amount');
+      const btnNaik = document.getElementById('btn-naik');
+      const btnTurun = document.getElementById('btn-turun');
+      const logBox = document.getElementById('action-log-box');
+
+      const barIndicator = document.getElementById('bar-indicator');
+      const btnSetGreen = document.getElementById('btn-set-green');
+      const btnSetRed = document.getElementById('btn-set-red');
+      const btnSetNeutral = document.getElementById('btn-set-neutral');
+
+      const trendDisplay = document.getElementById('trendline-display-box');
+      const btnSetUptrend = document.getElementById('btn-set-uptrend');
+      const btnSetDowntrend = document.getElementById('btn-set-downtrend');
+      const btnSetAbsurd = document.getElementById('btn-set-absurd');
+
+      function addLog(msg, isSuccess = true) {
+        const timeStr = new Date().toLocaleTimeString();
+        const div = document.createElement('div');
+        div.className = 'log-item';
+        div.innerHTML = `<span class="log-time">[${timeStr}]</span> <span class="${isSuccess ? 'log-success' : ''}">${msg}</span>`;
+        logBox.prepend(div);
+      }
+
+      const chartSimArea = document.getElementById('chart-sim-area');
+
+      if (trendDisplay && btnSetUptrend && btnSetDowntrend && btnSetAbsurd) {
+        btnSetUptrend.addEventListener('click', () => {
+          trendDisplay.innerHTML = '📈 STATUS TRENDLINE: UPTREND (GARIS MELINTANG MIRING KE ATAS) -> SINYAL NAIK';
+          trendDisplay.style.color = '#4ade80';
+          if (barIndicator) {
+            barIndicator.className = 'bar-green';
+            barIndicator.style.backgroundColor = '#22c55e';
+            barIndicator.innerHTML = '🟢 ELEMEN BATANG AKTIF: WARNA HIJAU (SIGNAL NAIK)';
+          }
+          if (chartSimArea) {
+            chartSimArea.innerHTML = `
+              <div class="candle-green bar-item" style="width: 14px; height: 30px; background-color: #22c55e; border-radius: 2px;"></div>
+              <div class="candle-green bar-item" style="width: 14px; height: 45px; background-color: #22c55e; border-radius: 2px;"></div>
+              <div class="candle-red bar-item" style="width: 14px; height: 38px; background-color: #ef4444; border-radius: 2px;"></div>
+              <div class="candle-green bar-item" style="width: 14px; height: 65px; background-color: #22c55e; border-radius: 2px;"></div>
+              <div class="candle-green bar-item" style="width: 14px; height: 85px; background-color: #22c55e; border-radius: 2px;"></div>
+              <div class="candle-green bar-item" style="width: 14px; height: 105px; background-color: #22c55e; border-radius: 2px;"></div>
+            `;
+          }
+          addLog('📈 Garis Trendline disetel ke UPTREND (Sinyal NAIK)');
+        });
+
+        btnSetDowntrend.addEventListener('click', () => {
+          trendDisplay.innerHTML = '📉 STATUS TRENDLINE: DOWNTREND (GARIS MELINTANG MIRING KE BAWAH) -> SINYAL TURUN';
+          trendDisplay.style.color = '#f87171';
+          if (barIndicator) {
+            barIndicator.className = 'bar-red';
+            barIndicator.style.backgroundColor = '#ef4444';
+            barIndicator.innerHTML = '🔴 ELEMEN BATANG AKTIF: WARNA MERAH (SIGNAL TURUN)';
+          }
+          if (chartSimArea) {
+            chartSimArea.innerHTML = `
+              <div class="candle-red bar-item" style="width: 14px; height: 105px; background-color: #ef4444; border-radius: 2px;"></div>
+              <div class="candle-red bar-item" style="width: 14px; height: 85px; background-color: #ef4444; border-radius: 2px;"></div>
+              <div class="candle-green bar-item" style="width: 14px; height: 90px; background-color: #22c55e; border-radius: 2px;"></div>
+              <div class="candle-red bar-item" style="width: 14px; height: 60px; background-color: #ef4444; border-radius: 2px;"></div>
+              <div class="candle-red bar-item" style="width: 14px; height: 42px; background-color: #ef4444; border-radius: 2px;"></div>
+              <div class="candle-red bar-item" style="width: 14px; height: 25px; background-color: #ef4444; border-radius: 2px;"></div>
+            `;
+          }
+          addLog('📉 Garis Trendline disetel ke DOWNTREND (Sinyal TURUN)');
+        });
+
+        btnSetAbsurd.addEventListener('click', () => {
+          trendDisplay.innerHTML = '⚠️ STATUS TRENDLINE: TREND ABSURD / FLUKTUASI ACAK (MENAHAN KLIK)';
+          trendDisplay.style.color = '#eab308';
+          if (barIndicator) {
+            barIndicator.className = 'bar-neutral';
+            barIndicator.style.backgroundColor = '#475569';
+            barIndicator.innerHTML = '⚪ ELEMEN BATANG AKTIF: NETRAL / ABSURD';
+          }
+          if (chartSimArea) {
+            chartSimArea.innerHTML = `
+              <div class="candle-green bar-item" style="width: 14px; height: 60px; background-color: #22c55e; border-radius: 2px;"></div>
+              <div class="candle-red bar-item" style="width: 14px; height: 55px; background-color: #ef4444; border-radius: 2px;"></div>
+              <div class="candle-green bar-item" style="width: 14px; height: 62px; background-color: #22c55e; border-radius: 2px;"></div>
+              <div class="candle-red bar-item" style="width: 14px; height: 58px; background-color: #ef4444; border-radius: 2px;"></div>
+              <div class="candle-green bar-item" style="width: 14px; height: 61px; background-color: #22c55e; border-radius: 2px;"></div>
+              <div class="candle-red bar-item" style="width: 14px; height: 57px; background-color: #ef4444; border-radius: 2px;"></div>
+            `;
+          }
+          addLog('⚠️ Garis Trendline disetel ke TREND ABSURD (Mesin Menahan Klik)');
+        });
+      }
+
+
+      if (nominalInput) {
+        nominalInput.addEventListener('input', () => {
+          addLog(`✏️ [LANGKAH 1: ISI NOMINAL] Nominal diisikan oleh mesin: <strong>IDR ${nominalInput.value}</strong>`);
+        });
+        nominalInput.addEventListener('change', () => {
+          addLog(`✏️ [CONFIRMED NOMINAL] Nominal terkonfirmasi: <strong>IDR ${nominalInput.value}</strong>`);
+        });
+      }
+
+
+      if (btnNaik) {
+        btnNaik.addEventListener('click', () => {
+          const val = nominalInput ? nominalInput.value : 'N/A';
+          addLog(`🚀 [MESIN KLIK NAIK] Tombol NAIK terdeteksi & diklik oleh mesin dengan Nominal: ${val}`);
+        });
+      }
+
+      if (btnTurun) {
+        btnTurun.addEventListener('click', () => {
+          const val = nominalInput ? nominalInput.value : 'N/A';
+          addLog(`📉 [MESIN KLIK TURUN] Tombol TURUN terdeteksi & diklik oleh mesin dengan Nominal: ${val}`);
+        });
+      }
+
+      if (barIndicator && btnSetGreen && btnSetRed && btnSetNeutral) {
+        btnSetGreen.addEventListener('click', () => {
+          barIndicator.className = 'bar-green';
+          barIndicator.style.backgroundColor = '#22c55e';
+          barIndicator.style.boxShadow = '0 4px 12px rgba(34, 197, 94, 0.4)';
+          barIndicator.innerHTML = '🟢 ELEMEN BATANG AKTIF: WARNA HIJAU (SIGNAL NAIK)';
+          addLog('🟢 Batang diubah menjadi WARNA HIJAU');
+        });
+
+        btnSetRed.addEventListener('click', () => {
+          barIndicator.className = 'bar-red';
+          barIndicator.style.backgroundColor = '#ef4444';
+          barIndicator.style.boxShadow = '0 4px 12px rgba(239, 68, 68, 0.4)';
+          barIndicator.innerHTML = '🔴 ELEMEN BATANG AKTIF: WARNA MERAH (SIGNAL TURUN)';
+          addLog('🔴 Batang diubah menjadi WARNA MERAH');
+        });
+
+        const btnSimLoss = document.getElementById('btn-sim-loss-badge');
+        const btnSimProfit = document.getElementById('btn-sim-profit-badge');
+        const simBadgeBox = document.getElementById('sim-deal-badge-box');
+        const simBadgeEl = document.getElementById('sim-deal-badge');
+
+        if (btnSimLoss && simBadgeEl) {
+          btnSimLoss.addEventListener('click', () => {
+            if (simBadgeBox) simBadgeBox.style.display = 'block';
+            simBadgeEl.style.backgroundColor = '#ef4444';
+            simBadgeEl.innerText = '-Đ5,00';
+            addLog('🔴 Badge Deal Loss (-Đ5,00) Dimunculkan di Layar');
+          });
+        }
+
+        if (btnSimProfit && simBadgeEl) {
+          btnSimProfit.addEventListener('click', () => {
+            if (simBadgeBox) simBadgeBox.style.display = 'block';
+            simBadgeEl.style.backgroundColor = '#22c55e';
+            simBadgeEl.innerText = '+Đ4,50';
+            addLog('🟢 Badge Deal Win (+Đ4,50) Dimunculkan di Layar');
+          });
+        }
+      }
+
+      // Live Timer Countdown Simulator for Test Case 8
+      const simTimerBox = document.getElementById('sim-timer-box');
+      const btnResetSimTimer = document.getElementById('btn-reset-sim-timer');
+      let timerSecs = 30;
+
+      function updateTimerDisplay() {
+        if (!simTimerBox) return;
+        const mins = Math.floor(timerSecs / 60);
+        const secs = timerSecs % 60;
+        simTimerBox.innerText = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+      }
+
+      setInterval(() => {
+        if (timerSecs > 0) {
+          timerSecs--;
+        } else {
+          timerSecs = 30; // Reset otomatis saat durasi habis
+          addLog('⏱️ Timer durasi reset otomatis ke 00:30 (Siklus Durasi Baru)');
+        }
+        updateTimerDisplay();
+      }, 1000);
+
+      if (btnResetSimTimer) {
+        btnResetSimTimer.addEventListener('click', () => {
+          timerSecs = 30;
+          updateTimerDisplay();
+          addLog('⏱️ Timer durasi di-reset manual ke 00:30');
+        });
+      }
+
+      // Test Case 9: Live Quote Simulator
+      const simLiveQuote = document.getElementById('sim-live-quote');
+      const btnSetPriceBase = document.getElementById('btn-set-price-base');
+      const btnSetPriceUp = document.getElementById('btn-set-price-up');
+      const btnSetPriceDown = document.getElementById('btn-set-price-down');
+
+      if (simLiveQuote) {
+        if (btnSetPriceBase) {
+          btnSetPriceBase.addEventListener('click', () => {
+            simLiveQuote.innerText = '636.0253';
+            addLog('📌 Teks Quote Live disetel ke 636.0253 (Harga OP Awal)');
+          });
+        }
+        if (btnSetPriceUp) {
+          btnSetPriceUp.addEventListener('click', () => {
+            simLiveQuote.innerText = '636.5116';
+            addLog('📈 Teks Quote Live disetel ke 636.5116 (Harga Naik / Profit NAIK)');
+          });
+        }
+        if (btnSetPriceDown) {
+          btnSetPriceDown.addEventListener('click', () => {
+            simLiveQuote.innerText = '635.8900';
+            addLog('📉 Teks Quote Live disetel ke 635.8900 (Harga Turun / Profit TURUN)');
+          });
+        // Test Case 10: Topological Nominal Simulator
+        const topoDisplay = document.getElementById('topo-nominal-display');
+        const btnTopo18000 = document.getElementById('btn-topo-18000');
+        const btnTopo61461 = document.getElementById('btn-topo-61461');
+        const btnTopo150 = document.getElementById('btn-topo-150');
+
+        if (topoDisplay) {
+          if (btnTopo18000) {
+            btnTopo18000.addEventListener('click', () => {
+              topoDisplay.innerHTML = '🛡️ 18,000.50';
+              addLog('🛡️ Nominal disetel: 🛡️ 18,000.50 (Topological Engine akan membuang ikon shield dan mengekstrak 18,000.50)');
+            });
+          }
+          if (btnTopo61461) {
+            btnTopo61461.addEventListener('click', () => {
+              topoDisplay.innerHTML = '🔒 6.1461';
+              addLog('🔒 Nominal disetel: 🔒 6.1461 (Topological Engine akan membuang ikon gembok dan mengekstrak 6.1461)');
+            });
+          }
+          if (btnTopo150) {
+            btnTopo150.addEventListener('click', () => {
+              topoDisplay.innerHTML = '📊 150.00%';
+              addLog('📊 Nominal disetel: 📊 150.00% (Topological Engine mengekstrak 150.00%)');
+            });
+          }
+        }
+      }
+    })();
+  </script>
+
+
+</body>
+</html>
+
