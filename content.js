@@ -734,8 +734,8 @@
 
             // Deteksi tanda Plus atau Minus generik (biasanya selalu muncul di hasil trade)
             const isGenericPlusMinus = (
-                /[+＋]\s*(?:[\u0110\u01b0D$€£₹฿]|Rp)?\s*\d/i.test(rawText) ||
-                /[-\u2212\u2013\u2014]\s*(?:[\u0110\u01b0D$€£₹฿]|Rp)?\s*\d/i.test(rawText)
+                /[+＋]\s*(?:[\u0110\u00D0\u01b0D$€£₹฿]|Rp)?\s*\d/i.test(rawText) ||
+                /[-\u2212\u2013\u2014]\s*(?:[\u0110\u00D0\u01b0D$€£₹฿]|Rp)?\s*\d/i.test(rawText)
             );
 
             const isNearEnd = (tradeState === 'WAITING_RESULT' || (tradeState === 'TRADE_ACTIVE' && ((Date.now() - tradeStartTime) / 1000) >= (tradeDurationSecs || 5) - 1.5));
@@ -757,6 +757,8 @@
               lower.includes('closed with a loss') ||
               lower.includes('ditutup dengan keuntungan') || 
               lower.includes('ditutup dengan kerugian') ||
+              lower.includes('ditutup dengan profit') ||
+              lower.includes('ditutup dengan rugi') ||
               (lower.includes('amount') && (lower.includes('income') || lower.includes('pnl') || lower.includes('profit'))) ||
               (lower.includes('jumlah') && (lower.includes('pendapatan') || lower.includes('hasil')));
 
@@ -775,19 +777,19 @@
 
               // Evaluasi Win/Loss HANYA DARI teks notifikasi resmi
               const isWin = (
-                /[+＋]\s*(?:[\u0110\u01b0D$€£₹฿]|Rp)?\s*\d/i.test(rawText) ||
+                /[+＋]\s*(?:[\u0110\u00D0\u01b0D$€£₹฿]|Rp)?\s*\d/i.test(rawText) ||
                 (lower.includes('mendapatkan') && /[+＋]\s*\d/.test(rawText)) ||
-                lower.includes('berhasil') || (lower.includes('win') && !lower.includes('window')) || lower.includes('keuntungan')
+                lower.includes('berhasil') || (lower.includes('win') && !lower.includes('window')) || lower.includes('keuntungan') || lower.includes('profit')
               );
               
-              const isZero = /^(?:[\u0110\u01b0D$€£₹฿]|Rp)?\s*0(?:[.,]0{1,2})?\s*(?:[\u0110\u01b0D$€£₹฿]|Rp)?$/i.test(rawText.trim()) ||
+              const isZero = /^(?:[\u0110\u00D0\u01b0D$€£₹฿]|Rp)?\s*0(?:[.,]0{1,2})?\s*(?:[\u0110\u00D0\u01b0D$€£₹฿]|Rp)?$/i.test(rawText.trim()) ||
                 lower.includes('mendapatkan \u01110') || lower.includes('mendapatkan $0') || lower.includes('mendapatkan rp0') ||
                 /\b0[,.]00\b/.test(rawText) || 
                 lower.match(/pnl\s*:\s*[-]*[0D$€£₹฿Rp]*0[,.]00/i) || 
                 lower.match(/income\s*:\s*[-]*[0D$€£₹฿Rp]*0[,.]00/i);
                 
               const isLoss = (
-                /[-\u2212\u2013\u2014]\s*(?:[\u0110\u01b0D$€£₹฿]|Rp)?\s*\d/i.test(rawText) ||
+                /[-\u2212\u2013\u2014]\s*(?:[\u0110\u00D0\u01b0D$€£₹฿]|Rp)?\s*\d/i.test(rawText) ||
                 lower.includes('loss') || lower.includes('rugi') || lower.includes('gagal') || lower.includes('kerugian') || isZero
               );
 
@@ -953,10 +955,10 @@
       const ageMs = now - window._priceAgeTracker[x.raw];
 
       // 1. Reward precision (most OlympTrade quotes have 4-6 decimals, some 2)
-      if (x.decD >= 4) score += 50;
-      else if (x.decD >= 2) score += 20;
-      else if (x.decD === 1) score += 5;
-      else if (x.decD === 0) score -= 50; // Heavily penalize integers
+      if (x.decD >= 4) score += 150;
+      else if (x.decD >= 2) score += 40;
+      else if (x.decD === 1) score += 10;
+      else if (x.decD === 0) score -= 200; // Heavily penalize integers
 
       // 2. Reward total string length
       score += (x.intD + x.decD) * 2;
@@ -965,18 +967,14 @@
       if (anchorNum && !isNaN(anchorNum) && anchorNum !== 0) {
         const ratio = Math.abs(x.val) / Math.abs(anchorNum);
         if (ratio >= 0.5 && ratio <= 2.0) score += 100;
-        else score -= 100;
+        else score -= 500;
       } else {
         if (Math.abs(x.val) < 10 && x.decD < 4) score -= 20;
       }
       
-      // 4. LIVENESS PENALTY (MENGHANCURKAN ANGKA BEKU / GARIS STATIS)
-      // Di market OTC, harga asli berfluktuasi tiap detik.
-      // Jika angka sama persis bertahan lebih dari 3 detik (3000ms), itu PASTI garis statis!
-      if (ageMs > 3000) {
-         score -= 500; // Penalti mutlak untuk angka beku
-      } else {
-         score += 100; // Bonus mutlak untuk angka segar (berubah-ubah)
+      // 4. LIVENESS BONUS (Tidak ada penalti untuk statis, hanya bonus kecil untuk yang fresh)
+      if (ageMs <= 3000) {
+         score += 20; // Bonus kecil untuk angka segar (berubah-ubah)
       }
       
       // 4. Tracked Element Priority (Crucial for preventing lock-on to static drawing lines)
@@ -1042,7 +1040,7 @@
       let freshOpenValStr = initialOpenValStr;
       entryPriceValue = freshOpenValStr;
 
-      currentActiveTrade = {
+      activeTradeRecord = {
         operationId: null,
         positionId: null,
         openValStr: initialOpenValStr,
@@ -1055,7 +1053,7 @@
       // KUNCI PERBAIKAN: Jalankan LogManager secara asinkron tanpa memblokir thread (tanpa await).
       // Jika Storage API hang, eksekusi timer trading utama tidak akan pernah terhenti!
       window.LogManager.createOperation(action, initialOpenValStr, isNaN(initialPriceNum) ? null : initialPriceNum, nominal).then(operationId => {
-        if (currentActiveTrade) currentActiveTrade.operationId = operationId;
+        if (activeTradeRecord) activeTradeRecord.operationId = operationId;
         
         // 2. DELAY 300ms UNTUK DOM REFRESH & CONFIRM POSITION
         setTimeout(() => {
@@ -1064,13 +1062,13 @@
           const updatedOpenPriceNum = parseFloat(updatedOpenValStr.replace(/[^0-9.-]/g, ''));
           entryPriceValue = updatedOpenValStr;
 
-          if (currentActiveTrade) {
-            currentActiveTrade.openValStr = updatedOpenValStr;
-            currentActiveTrade.openPriceNum = isNaN(updatedOpenPriceNum) ? null : updatedOpenPriceNum;
+          if (activeTradeRecord) {
+            activeTradeRecord.openValStr = updatedOpenValStr;
+            activeTradeRecord.openPriceNum = isNaN(updatedOpenPriceNum) ? null : updatedOpenPriceNum;
           }
 
           window.LogManager.confirmPosition(operationId, updatedOpenValStr, isNaN(updatedOpenPriceNum) ? null : updatedOpenPriceNum).then(positionId => {
-            if (currentActiveTrade) currentActiveTrade.positionId = positionId;
+            if (activeTradeRecord) activeTradeRecord.positionId = positionId;
           }).catch(e => console.error("LogManager confirmPosition failed:", e));
         }, 300);
       }).catch(e => console.error("LogManager createOperation failed:", e));
@@ -1107,27 +1105,19 @@
   }
 
   function completeTradeLifecycle(activeTrade) {
-    // Terima TRADE_ACTIVE dan WAITING_RESULT (runAutoScreenScan mungkin sudah transisi ke WAITING_RESULT)
     if (!activeTrade || (tradeState !== 'TRADE_ACTIVE' && tradeState !== 'WAITING_RESULT')) {
-      // Jika sudah IDLE (sudah di-close oleh path lain), jangan close lagi
       return;
     }
 
-    // ── MULTI-ATTEMPT ANCHOR-AWARE: Coba baca harga close dengan anchor open price ──
-    // Open price dipakai sebagai MAGNITUDE ANCHOR sehingga scanner hanya terima
-    // angka yang digit & skalanya sama dengan open. Contoh: open 1571.8042 →
-    // close harus ~4 digit integer part, bukan 3 atau 1 digit.
-    const openAnchor = activeTrade.openPriceNum; // null jika open gagal
+    const openAnchor = activeTrade.openPriceNum;
 
     function resolveCloseVal() {
       // (1) Baca DOM real-time pakai anchor
       const liveVal = getPrimaryValueFromRegion(openAnchor);
       if (liveVal && liveVal !== '--') {
-        // Validasi: jika ada anchor, pastikan magnitude kandidat masuk akal
         if (openAnchor) {
           const liveNum = parseFloat(liveVal.replace(/[^0-9.-]/g, ''));
           if (!isNaN(liveNum) && isPricePlausible(liveNum, openAnchor)) return liveVal;
-          // Kandidat gagal validasi → coba snapshot
         } else {
           return liveVal;
         }
@@ -1142,7 +1132,14 @@
         }
       }
       // (3) lastChangedValue — last resort
-      if (lastChangedValue && lastChangedValue !== '--') return lastChangedValue;
+      if (lastChangedValue && lastChangedValue !== '--') {
+        if (openAnchor) {
+          const lastNum = parseFloat(lastChangedValue.replace(/[^0-9.-]/g, ''));
+          if (!isNaN(lastNum) && isPricePlausible(lastNum, openAnchor)) return lastChangedValue;
+        } else {
+          return lastChangedValue;
+        }
+      }
       return '--';
     }
 
@@ -1155,64 +1152,47 @@
 
     const closeValStr = resolveCloseVal();
     const closePriceNum = parseFloat(closeValStr.replace(/[^0-9.-]/g, ''));
-
-    const openNum = activeTrade.openPriceNum;
     const closeNum = isNaN(closePriceNum) ? null : closePriceNum;
+    
+    // Waktu yang sudah berlalu sejak durasi trade habis (WAITING_RESULT phase)
+    const elapsedWaitingMs = Date.now() - (tradeStartTime + (tradeDurationSecs * 1000));
 
     // Jika close masih '--' atau tidak plausible, coba retry 1x setelah 400ms
     const needsRetry = closeValStr === '--' || closeNum === null ||
       (openAnchor && !isPricePlausible(closeNum, openAnchor));
 
-    if (needsRetry) {
-      setTimeout(() => {
-        try {
-          const retryVal = resolveCloseVal();
-          if (retryVal && retryVal !== '--') lastValidCloseSnapshot = retryVal;
-          waitForPlatformVerdict(activeTrade, (retryVal && retryVal !== '--') ? retryVal : (lastValidCloseSnapshot !== '--' ? lastValidCloseSnapshot : closeValStr));
-        } catch (e) {
-          console.error('[CRASH] Error in needsRetry setTimeout:', e);
-          _doCompleteWithClose(activeTrade, closeValStr, { isWin: false, source: 'SYSTEM_CRASH' });
-        }
-      }, 400);
-      return; // Tunggu retry
+    // Jika masih butuh retry dan belum lewat 400ms, biarkan (return, tunggu tick berikutnya)
+    if (needsRetry && elapsedWaitingMs < 400) {
+      return; 
     }
 
-    waitForPlatformVerdict(activeTrade, closeValStr);
-  }
+    // Jika lewat 400ms dan mendapat nilai dari retry
+    if (needsRetry && elapsedWaitingMs >= 400 && closeValStr !== '--') {
+      lastValidCloseSnapshot = closeValStr;
+    }
 
-  function waitForPlatformVerdict(activeTrade, closeValStr) {
-    const startWaitTime = Date.now();
-    const interval = setInterval(() => {
-      try {
-        const waitTime = Date.now() - startWaitTime;
-        const recentVerdict = lastWinLossVerdict;
-        const verdictAge = recentVerdict ? (Date.now() - recentVerdict.ts) : Infinity;
-        
-        if (recentVerdict && verdictAge < 15000) {
-          clearInterval(interval);
-          let finalCloseVal = closeValStr; 
-          if (recentVerdict.livePrice && recentVerdict.livePrice !== '--') {
-             finalCloseVal = recentVerdict.livePrice;
-          }
-          _doCompleteWithClose(activeTrade, finalCloseVal, recentVerdict);
-          return;
-        }
+    const finalCloseToUse = (needsRetry && lastValidCloseSnapshot !== '--') ? lastValidCloseSnapshot : closeValStr;
 
-        // TIMEOUT AMAN: 3000ms
-        // Kita butuh 3 detik agar notifikasi server OlympTrade sempat muncul!
-        if (waitTime >= 3000) {
-          clearInterval(interval);
-          // KUNCI PERBAIKAN: JANGAN PERNAH MENGAMBIL HARGA LAYAR (freshVal) LAGI DI SINI!
-          // Saat ini sudah lewat 3 detik dari penutupan trade. Harga layar sudah jauh berubah.
-          // Gunakan closeValStr yang sudah ditangkap TEPAT secara akurat di detik ke-5.
-          _doCompleteWithClose(activeTrade, closeValStr, null);
-        }
-      } catch (e) {
-        clearInterval(interval);
-        console.error('[CRASH] Error in waitForPlatformVerdict interval:', e);
-        _doCompleteWithClose(activeTrade, closeValStr, { isWin: false, source: 'SYSTEM_CRASH' });
+    // --- EVALUASI VERDICT SECARA STATELESS ---
+    const recentVerdict = lastWinLossVerdict;
+    const verdictAge = recentVerdict ? (Date.now() - recentVerdict.ts) : Infinity;
+    
+    if (recentVerdict && verdictAge < 15000) {
+      let finalCloseVal = finalCloseToUse; 
+      if (recentVerdict.livePrice && recentVerdict.livePrice !== '--') {
+         finalCloseVal = recentVerdict.livePrice;
       }
-    }, 200);
+      _doCompleteWithClose(activeTrade, finalCloseVal, recentVerdict);
+      return;
+    }
+
+    // TIMEOUT AMAN: 3000ms
+    // Kita butuh 3 detik agar notifikasi server OlympTrade sempat muncul!
+    // KUNCI PERBAIKAN: JANGAN PERNAH MENGAMBIL HARGA LAYAR LAGI DI SINI!
+    if (elapsedWaitingMs >= 3000) {
+      _doCompleteWithClose(activeTrade, finalCloseToUse, null);
+      return;
+    }
   }
 
   function _doCompleteWithClose(activeTrade, closeValStr, platformVerdict) {
@@ -1230,26 +1210,37 @@
         isWin = platformVerdict.isWin;
         winLossSource = platformVerdict.source;
         
-        if (isWin && activeTrade.nominal) {
-           const raw = platformVerdict.rawText || '';
-           const lower = raw.toLowerCase();
-           if (lower.includes('refund') || lower.includes('draw') || lower.includes('dikembalikan')) {
-               isWin = false;
-               isNetral = true;
-           } else {
-               const plusMatch = raw.match(/[+＋]\s*(?:[\u0110\u01b0D$€£₹฿]|Rp)?\s*(\d+(?:[.,]\d+)?)/i);
-               if (plusMatch) {
-                   const nomNum = parseFloat(activeTrade.nominal);
-                   const valAsDecimal = parseFloat(plusMatch[1].replace(/,/g, ''));
-                   const valStripped = parseFloat(plusMatch[1].replace(/[.,]/g, ''));
-                   if (!isNaN(nomNum)) {
-                       if (Math.abs(valAsDecimal - nomNum) < 0.001 || Math.abs(valStripped - nomNum) < 0.001) {
-                           isWin = false;
-                           isNetral = true;
-                       }
-                   }
-               }
-           }
+        const raw = platformVerdict.rawText || '';
+        const lower = raw.toLowerCase();
+
+        // 1. Cek Refund / Draw dari keyword atau angka 0,00
+        const isZeroReturn = /^(?:[\u0110\u00D0\u01b0D$€£₹฿]|Rp)?\s*0(?:[.,]0{1,2})?\s*(?:[\u0110\u00D0\u01b0D$€£₹฿]|Rp)?$/i.test(raw.trim());
+        
+        if (lower.includes('refund') || lower.includes('draw') || lower.includes('dikembalikan') || isZeroReturn) {
+            isWin = false;
+            isNetral = true;
+        } else if (isWin && activeTrade.nominal) {
+            // 2. Cek apakah profit yang didapat SAMA dengan nominal OP (berarti balik modal / draw)
+            const plusMatch = raw.match(/[+＋]\s*(?:[\u0110\u00D0\u01b0D$€£₹฿]|Rp)?\s*(\d+(?:[.,]\d+)?)/i);
+            if (plusMatch) {
+                const nomNum = parseFloat(activeTrade.nominal);
+                const valAsDecimal = parseFloat(plusMatch[1].replace(/,/g, ''));
+                const valStripped = parseFloat(plusMatch[1].replace(/[.,]/g, ''));
+                
+                if (!isNaN(nomNum)) {
+                    let isDraw = false;
+                    if (Math.abs(valAsDecimal - nomNum) < 0.001) isDraw = true;
+                    // Hanya gunakan valStripped jika bukan angka desimal kecil yang berawalan 0 (Mencegah +0.0001 dianggap 1)
+                    if (!plusMatch[1].startsWith('0.') && !plusMatch[1].startsWith('0,')) {
+                        if (Math.abs(valStripped - nomNum) < 0.001) isDraw = true;
+                    }
+                    
+                    if (isDraw) {
+                        isWin = false;
+                        isNetral = true;
+                    }
+                }
+            }
         }
       } else {
         // PRIORITAS 1 FALLBACK: Gunakan perbandingan harga (Sangat Akurat dengan Anchor-Aware)
@@ -1351,7 +1342,7 @@
         }
       }
     } finally {
-      currentActiveTrade = null;
+      activeTradeRecord = null;
       tradeState = 'IDLE';
       hasClickedInCurrentDuration = false;
       lastValidCloseSnapshot = '--';
@@ -1394,7 +1385,7 @@
         if (lower.includes('durasi') || lower.includes('saldo') || lower.includes('balance') || lower.includes('aktifkan')) continue;
 
         const hasNumber = /\d/.test(raw);
-        const hasCurrency = /(?:[\u0110\u01b0D$€£₹฿]|Rp)/i.test(raw);
+        const hasCurrency = /(?:[\u0110\u00D0\u01b0D$€£₹฿]|Rp)/i.test(raw);
 
         // --- DETEKSI WARNA (SUPER AKURAT UNTUK HISTORY PANEL) ---
         let isColorWin = false;
@@ -1421,17 +1412,18 @@
 
         // Deteksi WIN yang kuat: tanda + diikuti angka, keyword eksplisit, ATAU teks berwarna hijau dengan angka & mata uang
         const isWinSignal = (
-          /[+＋]\s*(?:[\u0110\u01b0D$€£₹฿]|Rp)?\s*\d/i.test(raw) ||
+          /[+＋]\s*(?:[\u0110\u00D0\u01b0D$€£₹฿]|Rp)?\s*\d/i.test(raw) ||
           (lower.includes('mendapatkan') && /[+＋]\s*\d/.test(raw)) ||
           lower.includes('berhasil') ||
           (lower.includes('win') && !lower.includes('window')) ||
+          lower.includes('keuntungan') || lower.includes('profit') ||
           (isColorWin && hasNumber && hasCurrency)
         );
 
         // Deteksi LOSS yang kuat: minus unicode/biasa, keyword eksplisit, ATAU teks berwarna merah dengan angka & mata uang
-        const isZeroReturn = /^(?:[\u0110\u01b0D$€£₹฿]|Rp)?\s*0(?:[.,]0{1,2})?\s*(?:[\u0110\u01b0D$€£₹฿]|Rp)?$/i.test(raw.trim());
+        const isZeroReturn = /^(?:[\u0110\u00D0\u01b0D$€£₹฿]|Rp)?\s*0(?:[.,]0{1,2})?\s*(?:[\u0110\u00D0\u01b0D$€£₹฿]|Rp)?$/i.test(raw.trim());
         const isLossSignal = (
-          /[-\u2212\u2013\u2014]\s*(?:[\u0110\u01b0D$€£₹฿]|Rp)?\s*\d/i.test(raw) || // Minus biasa & unicode
+          /[-\u2212\u2013\u2014]\s*(?:[\u0110\u00D0\u01b0D$€£₹฿]|Rp)?\s*\d/i.test(raw) || // Minus biasa & unicode
           (lower.includes('loss') && !lower.includes('lossless')) ||
           lower.includes('rugi') || lower.includes('gagal') ||
           isZeroReturn ||
@@ -1729,8 +1721,14 @@
         action = isSignalDown ? 'turun' : 'naik';
       }
 
-      aggressiveClickTradeButton(action);
-      startTradeLifecycle(durationInfo.totalSeconds || 5, action);
+      const clicked = aggressiveClickTradeButton(action);
+      if (clicked) {
+        startTradeLifecycle(durationInfo.totalSeconds || 5, action);
+      } else {
+        if (typeof showToastNotification === 'function') {
+          showToastNotification(`⚠️ Gagal klik tombol ${action.toUpperCase()}! Saldo tidak cukup atau tombol nonaktif.`);
+        }
+      }
     }, 100);
   }
 
@@ -1801,18 +1799,6 @@
             chrome.runtime.sendMessage({ action: 'TRADE_SCANNING_RESULT' });
           } catch (e) {}
           updateDurationStatusUI(true, `MEMINDAI HASIL...`);
-
-          // Panggil fungsi penutupan secara langsung!
-          // Ini jauh lebih tangguh daripada setTimeout karena runAutoScreenScan
-          // berjalan di main loop dan tidak akan di-throttle hingga 1 menit oleh browser.
-          if (currentActiveTrade) {
-            try {
-              completeTradeLifecycle(currentActiveTrade);
-            } catch(err) {
-              console.error('[CRASH] Error in completeTradeLifecycle:', err);
-              _doCompleteWithClose(currentActiveTrade, '--', { isWin: false, source: 'SYSTEM_CRASH' });
-            }
-          }
         } else {
           // SELAMA TRANSAKSI BERJALAN: TAMPILKAN DETIK BERJALAN PRESISI
           const remSecs = Math.ceil(tradeDurationSecs - elapsedSecs);
@@ -1821,16 +1807,30 @@
         }
       }
 
-      // TIMEOUT FALLBACK WAITING_RESULT:
-      // Safety net: jika timer deterministik gagal (seharusnya tidak pernah terjadi),
-      // izinkan bot kembali ke IDLE setelah 8s setelah durasi habis
+      // SIKLUS WAITING_RESULT: Evaluasi secara stateless setiap tick dari main loop
+      // Ini 100x lebih tangguh daripada setTimeout karena berjalan di main loop botTick
+      // dan tidak akan terjebak throttle 1-menit oleh Chrome di background tab.
       if (tradeState === 'WAITING_RESULT') {
-        const waitingElapsedSecs = (nowTime - tradeStartTime) / 1000 - tradeDurationSecs;
-        if (waitingElapsedSecs > 8) {
-          tradeState = 'IDLE';
-          hasClickedInCurrentDuration = false;
-          updateDurationStatusUI(false, durationInfo.timerText);
-          console.warn('[SAFETY FALLBACK] tradeState stuck in WAITING_RESULT > 8s, forcing IDLE');
+        if (activeTradeRecord) {
+          try {
+            completeTradeLifecycle(activeTradeRecord);
+          } catch(err) {
+            console.error('[CRASH] Error in completeTradeLifecycle:', err);
+            _doCompleteWithClose(activeTradeRecord, '--', { isWin: false, source: 'SYSTEM_CRASH' });
+          }
+        }
+
+        // TIMEOUT FALLBACK WAITING_RESULT:
+        // Safety net: jika timer deterministik gagal (seharusnya tidak pernah terjadi),
+        // izinkan bot kembali ke IDLE setelah 8s setelah durasi habis
+        if (tradeState === 'WAITING_RESULT') {
+          const waitingElapsedSecs = (nowTime - tradeStartTime) / 1000 - tradeDurationSecs;
+          if (waitingElapsedSecs > 8) {
+            tradeState = 'IDLE';
+            hasClickedInCurrentDuration = false;
+            updateDurationStatusUI(false, durationInfo.timerText);
+            console.warn('[SAFETY FALLBACK] tradeState stuck in WAITING_RESULT > 8s, forcing IDLE');
+          }
         }
       }
 
@@ -1938,11 +1938,18 @@
               // KLIK TOMBOL — 3 LAPIS STRATEGI SEKALIGUS
               const clicked = aggressiveClickTradeButton(action);
 
-              startTradeLifecycle(durationInfo.totalSeconds || 5, action).then(() => {
+              if (clicked) {
+                startTradeLifecycle(durationInfo.totalSeconds || 5, action).then(() => {
+                  _isInitiatingTrade = false;
+                });
+                const dirLabel = action === 'naik' ? '🟢 NAIK' : '🔴 TURUN';
+                showToastNotification(`${dirLabel} [OP DIBUKA] IDR ${nominalVal} — Click: OK`);
+              } else {
                 _isInitiatingTrade = false;
-              });
-              const dirLabel = action === 'naik' ? '🟢 NAIK' : '🔴 TURUN';
-              showToastNotification(`${dirLabel} [OP DIBUKA] IDR ${nominalVal} — Click:${clicked ? 'OK' : 'FALLBACK'}`);
+                hasClickedInCurrentDuration = false;
+                tradeState = 'IDLE';
+                showToastNotification(`⚠️ Gagal klik tombol ${action.toUpperCase()}! Saldo tidak cukup atau tombol nonaktif.`);
+              }
             }, 100);
           });
         });

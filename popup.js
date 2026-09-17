@@ -302,19 +302,45 @@ document.addEventListener('DOMContentLoaded', () => {
   function findBestPriceCandidate(numbers) {
     if (!numbers || numbers.length === 0) return '--';
     
-    // 1. Prioritas Utama: Cari angka yang memiliki desimal (.) (misal: 1571.8042 atau 1.5718)
-    const decimalMatch = numbers.find(n => n.includes('.') && !isNaN(parseFloat(n.replace(/[^0-9.-]/g, ''))));
-    if (decimalMatch) return decimalMatch;
-
-    // 2. Prioritas Ke-2: Cari angka yang nilainya > 10 (misal: 14000, 1571)
-    const largeMatch = numbers.find(n => !isNaN(parseFloat(n.replace(/[^0-9.-]/g, ''))) && Math.abs(parseFloat(n.replace(/[^0-9.-]/g, ''))) > 10);
-    if (largeMatch) return largeMatch;
-
-    // 3. Fallback: Ambil angka pertama yang bukan single-digit 0-9
-    const nonSingleDigit = numbers.find(n => n.length > 1);
-    if (nonSingleDigit) return nonSingleDigit;
-
-    return numbers[0] || '--';
+    let best = null;
+    let maxScore = -9999;
+    
+    for (let numStr of numbers) {
+      let normalized = numStr.replace('★', '');
+      const lastComma = normalized.lastIndexOf(',');
+      const lastDot = normalized.lastIndexOf('.');
+      if (lastComma > lastDot) {
+          normalized = normalized.replace(/\./g, '').replace(',', '.');
+      } else {
+          normalized = normalized.replace(/,/g, '');
+      }
+      const clean = normalized.replace(/[^0-9.-]/g, '');
+      if (!clean || clean === '.' || clean === '-' || clean === '+') continue;
+      
+      const parts = clean.split('.');
+      const intPart = parts[0].replace(/^0+/, '') || '0';
+      const decPart = parts.length > 1 ? parts[1] : '';
+      const intD = intPart === '0' ? 0 : intPart.length;
+      const decD = decPart.length;
+      const val = parseFloat(clean);
+      if (isNaN(val)) continue;
+      
+      let score = 0;
+      if (decD >= 4) score += 150;
+      else if (decD >= 2) score += 40;
+      else if (decD === 1) score += 10;
+      else if (decD === 0) score -= 200; // Penalize integers heavily
+      
+      score += (intD + decD) * 2;
+      if (Math.abs(val) < 10 && decD < 4) score -= 20;
+      
+      if (score > maxScore) {
+        maxScore = score;
+        best = numStr;
+      }
+    }
+    
+    return best || numbers[0] || '--';
   }
 
   // ─── Handle a DOM text result and update UI (EXACT SELECT_DETECT LOGIC) ───
